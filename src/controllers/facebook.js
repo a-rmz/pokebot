@@ -46,13 +46,8 @@ const callSendAPI = (message) => {
 };
 
 const sendArrayMessage = (recipientId, array) => {
-  // const avgWPM = 85;
-  // const avgCPM = avgWPM * 7;
-
   for (let i = 0; i < array.length; i++) {
     const messageObject = array[i];
-    // const typingLength = Math.min(Math.floor(messageText.length / (avgCPM / 60)) * 1000, 5000);
-
     const message = composeMessage(recipientId, messageObject);
 
     setTimeout(() => {
