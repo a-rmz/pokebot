@@ -60,8 +60,10 @@ const receivedMessage = (event) => {
   const senderId = event.sender.id;
   const text = event.message.text;
 
-  // Get the entities from Wit here
+  // Get the entities from Recast here
   const nlpResponse = recast.processMessage(text);
+  // This is a separate function, in case other things as sentiment or emojis want to be extracted
+  // without duplicating requests
   const entities = nlpResponse.then(response => recastUtils.getEntities(response));
 
   const processedMessage = entities
