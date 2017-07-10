@@ -1,0 +1,30 @@
+{
+  "name": "pokebot",
+  "version": "1.0.0",
+  "description": "A Pokedex bot",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "bot"
+  ],
+  "author": "Alex Ramirez",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "dotenv": "^4.0.0",
+    "express": "^4.15.3",
+    "morgan": "^1.8.2",
+    "node-wit": "^4.2.0",
+    "pokedex-promise-v2": "^3.0.3",
+    "recastai": "^3.4.1",
+    "request-promise": "^4.2.1"
+  },
+  "devDependencies": {
+    "debug": "^2.6.8",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb-base": "^11.2.0",
+    "eslint-plugin-import": "^2.7.0"
+  }
+}

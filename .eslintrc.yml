@@ -1,0 +1,6 @@
+extends: airbnb-base
+rules:
+  no-plusplus:
+    - error
+    - allowForLoopAfterthoughts: true
+  comma-dangle: 0
