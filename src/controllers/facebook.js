@@ -69,7 +69,9 @@ const receivedMessage = (event) => {
   const nlpResponse = recast.processMessage(text);
   const entities = nlpResponse.then(response => recastUtils.getEntities(response));
 
-  const processedMessage = entities.then(rawEntities => convoHandler.process(rawEntities));
+  const processedMessage = entities
+    .then(rawEntities => convoHandler.process(rawEntities))
+    .catch(error => error);
 
   processedMessage
     .then((response) => {

@@ -13,13 +13,16 @@ const getEntities = (recastResponse) => {
   const flatEntities = {};
 
   Object.entries(entities).forEach(([entity, values]) => {
-    const firstEnt = values[0];
-    if (firstEnt.confidence > THRESHOLD) {
-      flatEntities[entity] = firstEnt.value;
+    if (values.length > 0) {
+      const firstEnt = values[0];
+      if (firstEnt.confidence > THRESHOLD) {
+        flatEntities[entity] = firstEnt.value;
+      }
     }
   });
 
-  flatEntities.intent = (intents[0].confidence > THRESHOLD) ? intents[0].slug : null;
+  const intent = intents[0];
+  flatEntities.intent = (intent && intent.confidence > THRESHOLD) ? intent.slug : null;
   return flatEntities;
 };
 

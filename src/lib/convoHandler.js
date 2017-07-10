@@ -1,14 +1,16 @@
 
 const pokedex = require('../controllers/pokeapi');
-const { textMessage, imageMessage, cardMessage } = require('./messageFactory');
+const { textMessage, textArrayMessage, imageMessage, cardMessage } = require('./messageFactory');
 
 const GREETINGS = ['¡Qué onda! :D', 'Hoooola.', 'Hola. 😁', 'Wassup. 😝'];
+const GOODBYES = ['¡Adiós!', 'Gracias por preguntar. 😊', 'Hasta la próxima. 👋🏼'];
 
 const random = value => Math.floor((Math.random() * value));
 const capitalizeFirstLetter = string => string.charAt(0).toUpperCase() + string.slice(1);
 
-const hasIntent = entities => Object.prototype.hasOwnProperty.call(entities, 'intent');
-const hasPokemon = entities => Object.prototype.hasOwnProperty.call(entities, 'pokemon');
+const hasProp = (object, prop) => Object.prototype.hasOwnProperty.call(object, prop);
+const hasIntent = entities => hasProp(entities, 'intent');
+const hasPokemon = entities => hasProp(entities, 'pokemon');
 
 const isType = (entities, type) => hasIntent(entities) && entities.intent === type;
 
@@ -40,7 +42,7 @@ const attacks = (moves, pokemon) => {
       return capitalizeFirstLetter(name).replace('-', ' ');
     }).join(', ').concat('.');
   } else {
-    return ['Humm… algo salió mal (culpa a mi creador). Inténtalo de nuevo'];
+    return textArrayMessage('Humm… algo salió mal (culpa a mi creador). Inténtalo de nuevo');
   }
 
   messages.push(movesString);
@@ -69,10 +71,28 @@ const information = (pokemonInfo, pokemon) => {
   return [cardMessage(title, subtitle, url)];
 };
 
+const skills = (abilities, pokemon) => {
+  if (abilities && abilities.length > 0) {
+    const skillsArray = abilities.map(skill => capitalizeFirstLetter(skill.ability.name).replace('-', ' '));
+    const skillsMessage = skillsArray.join(', ').concat('.');
+    const title = `Estas son las habilidades de ${capitalizeFirstLetter(pokemon)}:`;
+
+    return textArrayMessage(title, skillsMessage);
+  }
+
+  return textArrayMessage('Humm… algo salió mal (culpa a mi creador). Inténtalo de nuevo');
+};
+
 const process = (entities) => {
+  console.log(JSON.stringify(entities, null, 2));
   if (isType(entities, 'greetings')) {
     const index = random(GREETINGS.length);
-    return Promise.resolve([GREETINGS[index]]);
+    return Promise.resolve(textArrayMessage(GREETINGS[index]));
+  }
+
+  if (isType(entities, 'goodbye')) {
+    const index = random(GOODBYES.length);
+    return Promise.resolve(textArrayMessage(GOODBYES[index]));
   }
   if (hasPokemon(entities)) {
     const { pokemon } = entities;
@@ -81,25 +101,31 @@ const process = (entities) => {
     if (isType(entities, 'attacks')) {
       return info
         .then(pokemonInfo => attacks(pokemonInfo.moves, pokemon))
-        .catch(() => [textMessage('Ammmm… ¿seguro que eso es un Pokemon?')]);
+        .catch(() => textArrayMessage('Ammmm… ¿seguro que eso es un Pokemon?'));
     }
 
     if (isType(entities, 'image')) {
       return info
         .then(pokemonInfo => image(pokemonInfo.sprites, pokemon))
-        .catch(() => [textMessage('Ammmm… ¿seguro que eso es un Pokemon?')]);
+        .catch(() => textArrayMessage('Ammmm… ¿seguro que eso es un Pokemon?'));
+    }
+
+    if (isType(entities, 'skills')) {
+      return info
+        .then(pokemonInfo => skills(pokemonInfo.abilities, pokemon))
+        .catch(() => textArrayMessage('Ammmm… ¿seguro que eso es un Pokemon?'));
     }
 
     if (isType(entities, 'information')) {
       return info
         .then(pokemonInfo => information(pokemonInfo, pokemon))
-        .catch(() => [textMessage('Ammmm… ¿seguro que eso es un Pokemon?')]);
+        .catch(() => textArrayMessage('Ammmm… ¿seguro que eso es un Pokemon?'));
     }
 
-    return Promise.reject([textMessage('Ammmm… ¿seguro que eso es un Pokemon?')]);
+    return Promise.reject(textArrayMessage('Ammmm… ¿seguro que eso es un Pokemon?'));
   }
 
-  return Promise.reject([textMessage('Lo siento, no pude entenderte. :(')]);
+  return Promise.reject(textArrayMessage('Lo siento, no pude entenderte. :('));
 };
 
 module.exports = {

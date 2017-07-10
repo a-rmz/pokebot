@@ -16,8 +16,11 @@ const cardMessage = (title, subtitle, url) => ({
   url
 });
 
+const textArrayMessage = (...textArray) => textArray.map(text => textMessage(text));
+
 module.exports = {
   textMessage,
+  textArrayMessage,
   imageMessage,
   cardMessage
 };
