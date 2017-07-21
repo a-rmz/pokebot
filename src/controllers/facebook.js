@@ -1,4 +1,4 @@
-
+const debug = require('debug')('pokebot:facebook');
 const requestPromise = require('request-promise');
 const recast = require('../controllers/recast');
 
@@ -45,14 +45,62 @@ const callSendAPI = (message) => {
     });
 };
 
+const callSendTyping = (recipientId, messageTimeout) => {
+  requestPromise({
+    uri: 'https://graph.facebook.com/v2.6/me/messages',
+    qs: {
+      access_token: process.env.FB_PAGE_ACCESS_TOKEN,
+    },
+    method: 'POST',
+    json: {
+      recipient: {
+        id: recipientId
+      },
+      sender_action: 'typing_on'
+    },
+  })
+    .then(() => {
+      if (typeof messageTimeout === 'function') {
+        messageTimeout();
+      }
+    });
+};
+
 const sendArrayMessage = (recipientId, array) => {
   for (let i = 0; i < array.length; i++) {
     const messageObject = array[i];
     const message = composeMessage(recipientId, messageObject);
+    debug(message);
 
-    setTimeout(() => {
-      callSendAPI(message);
-    }, i * 300);
+    ((scopedMessage, index, recipient) => {
+      const text = scopedMessage.message.text;
+      const textLength = (text) ? text.length : 70;
+      const avgWPM = 85;
+      const avgCPM = avgWPM * 7;
+
+      const typingLength = Math.min(Math.floor(textLength / (avgCPM / 60)) * 1000, 5000);
+
+      debug(`gonna wait for ${index * typingLength}`);
+      setTimeout(
+        () => {
+          debug(index, 'typing…');
+          debug(index, 'setting timer for send');
+          callSendTyping(
+            recipient,
+            () => {
+              setTimeout(
+                () => {
+                  debug('sending message:', scopedMessage.message);
+                  callSendAPI(scopedMessage);
+                },
+                typingLength
+              );
+            }
+          );
+        },
+        (index * typingLength) + (index * typingLength > 0 ? typingLength : 0)
+      );
+    })(message, i, recipientId);
   }
 };
 
@@ -72,6 +120,7 @@ const receivedMessage = (event) => {
 
   processedMessage
     .then((response) => {
+      console.log(JSON.stringify(response, null, 2));
       sendArrayMessage(senderId, response);
     })
     .catch((error) => {
